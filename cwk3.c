@@ -2,16 +2,12 @@
 // Starting point for the GPU coursework. Please read coursework instructions before attempting this.
 //
 
-
 //
 // Includes.
 //
 #include <stdio.h>
 #include <stdlib.h>
 #include "helper_cwk.h"			// Note this is not the same as the 'helper.h' used for examples.
-
-
-
 
 //
 // Main.
@@ -41,42 +37,18 @@ int main( int argc, char **argv )
 		*weights   = (float*) malloc( N*M*sizeof(float) );
 	initialiseArrays( gradients, inputs, weights, N, M );			// DO NOT REMOVE.
 
-	// Allocate and copy inputs array
-	// from host to device memory
-	cl_mem device_inputs = clCreateBuffer(
-		context,
-		CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-		M*sizeof(float),
-		inputs,
-		&status
-	);
-
-	// Allocate and copy gradients array
-	// from host to device memory
-	cl_mem device_gradients = clCreateBuffer(
-		context,
-		CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-		N*sizeof(float),
-		gradients,
-		&status
-	);
-
-	// Allocate and copy weights array
-	// from host to device memory
-	cl_mem device_weights = clCreateBuffer(
-		context,
-		CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR,
-		N*M*sizeof(float),
-		weights,
-		&status
-	);
-
+	// Allocate and copy host arrays from host to device memory
+	cl_mem device_inputs = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, M*sizeof(float), inputs, &status);
+	if(status==CL_SUCCESS)
+		printf("INPUTS GOOD\n");
+	cl_mem device_gradients = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, N*sizeof(float), gradients, &status);
+	if(status==CL_SUCCESS)
+		printf("GRADIENTS GOOD\n");
+	cl_mem device_weights = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, N*M*sizeof(float), weights, &status);
+	if(status==CL_SUCCESS)
+		printf("WEIGHTS GOOD\n");
 	// Create kernel from .cl file
-	cl_kernel kernel = compileKernelFromFile("weights_kernel.cl",
-											 "weightsUpdate",
-											 context,
-										 	 device
-										 	);
+	cl_kernel kernel = compileKernelFromFile("weightsKernel.cl", "weightsUpdate", context, device);
 
 	// Specify arguments to the kernel
 	status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &device_inputs);
@@ -84,37 +56,19 @@ int main( int argc, char **argv )
 	status = clSetKernelArg(kernel, 2, sizeof(cl_mem), &device_weights);
 
 	//  Start kernel
-	size_t globalSize [2] = {N,M};
-	// size_t workGroupSize [2] = {N,M};
+	size_t indexSpaceSize [2] = {N,M};
+	size_t workGroupSize [2] = {N,M};
 
 	// Put the kernel onto the command queue.
-	status = clEnqueueNDRangeKernel(queue,
-									kernel,
-									2,
-									0,
-									globalSize,
-									NULL,
-									0,
-									NULL,
-									NULL);
+	status = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, indexSpaceSize, workGroupSize, 0, NULL, NULL);
 	if( status != CL_SUCCESS )
 	{
 		printf( "Failure enqueuing kernel: Error %d.\n", status );
 		return EXIT_FAILURE;
 	}
 
-	//
 	// Get the result back from the device to the host, and check.
-	//
-	status = clEnqueueReadBuffer(queue,
-								device_weights,
-								CL_TRUE,
-								0,
-								N*M*sizeof(float),
-								weights,
-								0,
-								NULL,
-								NULL);
+	status = clEnqueueReadBuffer(queue, device_weights, CL_TRUE, 0, N*M*sizeof(float), weights, 0, NULL, NULL);
 	if( status != CL_SUCCESS )
 	{
 		printf( "Could not copy device data to host: Error %d.\n", status );
