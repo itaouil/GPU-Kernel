@@ -75,18 +75,21 @@ int main( int argc, char **argv )
 		return EXIT_FAILURE;
 	}
 
+	// Clean memory objects
+	clReleaseMemObject(device_inputs);
+	clReleaseMemObject(device_gradients);
+	clReleaseMemObject(device_weights);
+
 	// Output result to screen. DO NOT REMOVE THIS LINE (or alter displayWeights() in helper_cwk.h); this will be replaced
 	// with a different displayWeights() for the the assessment, so any changes you might make will be lost.
 	displayWeights( weights, N, M) ;								// DO NOT REMOVE.
 
+	// Clean arrays
 	free( gradients );
 	free( inputs    );
 	free( weights   );
 
-	clReleaseMemObject(inputs);
-	clReleaseMemObject(gradients);
-	clReleaseMemObject(weights);
-
+	// Clean context
 	clReleaseCommandQueue( queue   );
 	clReleaseContext     ( context );
 
