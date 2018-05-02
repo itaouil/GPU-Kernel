@@ -47,6 +47,7 @@ int main( int argc, char **argv )
 	cl_mem device_weights = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, N*M*sizeof(float), weights, &status);
 	if(status==CL_SUCCESS)
 		printf("WEIGHTS GOOD\n");
+
 	// Create kernel from .cl file
 	cl_kernel kernel = compileKernelFromFile("weightsKernel.cl", "weightsUpdate", context, device);
 
@@ -75,11 +76,6 @@ int main( int argc, char **argv )
 		return EXIT_FAILURE;
 	}
 
-	// Clean memory objects
-	clReleaseMemObject(device_inputs);
-	clReleaseMemObject(device_gradients);
-	clReleaseMemObject(device_weights);
-
 	// Output result to screen. DO NOT REMOVE THIS LINE (or alter displayWeights() in helper_cwk.h); this will be replaced
 	// with a different displayWeights() for the the assessment, so any changes you might make will be lost.
 	displayWeights( weights, N, M) ;								// DO NOT REMOVE.
@@ -88,6 +84,11 @@ int main( int argc, char **argv )
 	free( gradients );
 	free( inputs    );
 	free( weights   );
+
+	// Clean memory objects
+	clReleaseMemObject(device_inputs);
+	clReleaseMemObject(device_gradients);
+	clReleaseMemObject(device_weights);
 
 	// Clean context
 	clReleaseCommandQueue( queue   );
