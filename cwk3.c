@@ -32,9 +32,9 @@ int main( int argc, char **argv )
 	// Initialise host arrays. initialiseArrays() is defined in helper_cwk.h. DO NOT REMOVE or alter this routine;
 	// it will be replaced with a different version as part of the assessment.
 	float
-		*gradients = (float*) malloc( N  *sizeof(float) ),
-		*inputs    = (float*) malloc( M*sizeof(float) ),
-		*weights   = (float*) malloc( N*M*sizeof(float) );
+		*inputs    = (float*) malloc( M * sizeof(float) ),
+		*gradients = (float*) malloc( N * sizeof(float) ),
+		*weights   = (float*) malloc( N * M * sizeof(float) );
 	initialiseArrays( gradients, inputs, weights, N, M );			// DO NOT REMOVE.
 
 	// Allocate and copy host arrays from host to device memory
@@ -75,18 +75,6 @@ int main( int argc, char **argv )
 		return EXIT_FAILURE;
 	}
 
-	// printf( "Checking (will only display first few elements):\n" );
-	// for( i=0; i<N; i++ )
-	// {
-	// 	// Only print a few values.
-	// 	if( i<10 ) printf( "%g + %g = %g.\n", host_a[i], host_b[i], host_c[i] );
-	// 	if( host_a[i] + host_b[i] != host_c[i] )
-	// 	{
-	// 		printf( "Vector addition FAILED.\n" );
-	// 		break;
-	// 	}
-	// }
-
 	// Output result to screen. DO NOT REMOVE THIS LINE (or alter displayWeights() in helper_cwk.h); this will be replaced
 	// with a different displayWeights() for the the assessment, so any changes you might make will be lost.
 	displayWeights( weights, N, M) ;								// DO NOT REMOVE.
@@ -94,6 +82,10 @@ int main( int argc, char **argv )
 	free( gradients );
 	free( inputs    );
 	free( weights   );
+
+	clReleaseMemObject(inputs);
+	clReleaseMemObject(gradients);
+	clReleaseMemObject(weights);
 
 	clReleaseCommandQueue( queue   );
 	clReleaseContext     ( context );
